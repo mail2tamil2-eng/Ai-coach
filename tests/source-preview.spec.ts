@@ -1,0 +1,36 @@
+import { test, expect } from '@playwright/test';
+
+test('dedicated authoring page saves a draft, previews edits, and publishes on approval', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Add Knowledge Source' }).click();
+  await expect(page.getByRole('heading', { name: 'Add Knowledge Source' })).toBeVisible();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.getByLabel('Course Category', { exact: false }).selectOption('Technology');
+  await page.getByLabel('Course Title', { exact: false }).selectOption('c9');
+  await page.getByLabel('Knowledge Content', { exact: false }).fill('Excel formulas calculate totals.');
+  await page.screenshot({ path: 'test-results/source-authoring-page.png', fullPage: true });
+  await page.getByRole('button', { name: 'Save and Preview', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Preview AI Coach' })).toBeVisible();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.getByLabel('Ask your coach').fill('Explain Excel formulas');
+  await page.getByRole('button', { name: 'Send question' }).click();
+  await expect(page.getByRole('log')).toContainText('Excel formulas calculate totals.');
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('axle-ai-coach-v1')!).sources.find((s: { courseId: string }) => s.courseId === 'c9').published)).toBeUndefined();
+  await page.getByRole('button', { name: 'Edit Knowledge Source' }).click();
+  await expect(page.getByLabel('Knowledge Content', { exact: false })).toHaveValue('Excel formulas calculate totals.');
+  await page.getByLabel('Knowledge Content', { exact: false }).fill('Excel formulas calculate totals and averages.');
+  await page.getByRole('button', { name: 'Save and Preview' }).click();
+  await expect(page.getByRole('log')).not.toContainText('Excel formulas calculate totals.');
+  await page.getByLabel('Ask your coach').fill('Explain Excel formulas');
+  await page.getByRole('button', { name: 'Send question' }).click();
+  await expect(page.getByRole('log')).toContainText('Excel formulas calculate totals and averages.');
+  await page.screenshot({ path: 'test-results/source-preview-page.png', fullPage: true });
+  await page.getByRole('button', { name: 'Publish', exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Publish', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Published', exact: true })).toBeDisabled();
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('axle-ai-coach-v1')!).sources.find((s: { courseId: string }) => s.courseId === 'c9').published)).toBe('Excel formulas calculate totals and averages.');
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy();
+  await page.getByRole('button', { name: 'Edit Knowledge Source' }).click();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy();
+});

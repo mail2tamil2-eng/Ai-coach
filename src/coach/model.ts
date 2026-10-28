@@ -1,4 +1,4 @@
-export type Role = 'Org Admin' | 'Tenant Admin' | 'Course Creator' | 'Learner';
+export type Role = 'Admin' | 'Learner';
 export type Source = { id: string; courseId: string; type: 'Manual' | 'Document'; content: string; fileName?: string; state: 'Completed' | 'Failed'; error?: string; published?: string; inactive: boolean; dirty: boolean; created: string; modified: string; author: string };
 export type Message = { question: string; answer: string; mode: 'Text' | 'Voice'; status: 'Success' | 'Blocked' | 'Failed'; time: string };
 export type Session = { id: string; learner: string; email: string; learnerId: string; courseId: string; date: string; status: 'Active' | 'Completed'; messages: Message[] };
