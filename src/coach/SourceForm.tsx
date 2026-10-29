@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { ArrowLeft, FileText, Info, Play, Trash2, Upload } from 'lucide-react';
+import { ArrowLeft, Bot, CheckCircle2, FileText, Info, LoaderCircle, Play, Trash2, Upload } from 'lucide-react';
 import JSZip from 'jszip';
 import { Button } from '../app/components/saas/Button';
 import { FormField, SelectInput, TextArea } from '../app/components/saas/FormField';
@@ -54,7 +54,10 @@ export function SourceForm({ source, sources, onClose, onSave }: { source?: Sour
     if(validation) {setError(validation); return;}
     if(type === 'Document' && !documentName) {setError('Upload one knowledge document.'); return;}
     if(type === 'Document' && !file && source?.state === 'Failed') {setError('Upload a readable replacement to retry processing.'); return;}
-    setBusy(true); setError('');
+    if (busy) return;
+    setBusy(true); setError(''); setPhase('Preparing your preview');
+    const loadingStarted = Date.now();
+    await new Promise(resolve => setTimeout(resolve, 50));
     if(file && type === 'Document') {
       setPhase('Pending');
       await new Promise(resolve => setTimeout(resolve,250));
@@ -65,8 +68,26 @@ export function SourceForm({ source, sources, onClose, onSave }: { source?: Sour
         next = { ...next, content: text };
       } catch(e) { next = { ...next, content: '', state: 'Failed', error: e instanceof Error ? e.message : 'Unable to read this document. Upload an unprotected, readable replacement.' }; }
     }
+    if (next.state === 'Completed') {
+      setPhase('Preparing your preview');
+      await new Promise(resolve => setTimeout(resolve, Math.max(0, 1000 - (Date.now() - loadingStarted))));
+    }
     onSave(next); setBusy(false);
   };
+  if (busy) return <section className="panel flex min-h-[520px] items-center justify-center p-8" aria-busy="true" aria-label="Preparing AI Coach preview">
+    <div className="w-full max-w-md text-center">
+      <div className="relative mx-auto mb-7 flex size-20 items-center justify-center rounded-2xl bg-blue-50 text-blue-600"><Bot className="size-9" aria-hidden="true"/><LoaderCircle className="absolute -bottom-2 -right-2 size-8 animate-spin rounded-full bg-white p-1 motion-reduce:animate-none" aria-hidden="true"/></div>
+      <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-blue-600">Save and preview</p>
+      <h1 className="text-2xl font-bold text-gray-900">Getting your AI Coach ready</h1>
+      <p className="mt-3 text-sm leading-6 text-gray-500">{courseOf(courseId).title}</p>
+      <div role="status" aria-live="polite" aria-atomic="true" className="mt-7 rounded-xl border border-gray-100 bg-gray-50 p-5 text-left">
+        <div className="flex items-center gap-3 text-sm text-gray-600"><CheckCircle2 className="size-5 text-green-600" aria-hidden="true"/>Knowledge source checked</div>
+        <div className="mt-4 flex items-center gap-3 text-sm font-semibold text-blue-700"><LoaderCircle className="size-5 animate-spin motion-reduce:animate-none" aria-hidden="true"/>{phase}</div>
+      </div>
+      <p className="mt-6 text-sm leading-6 text-gray-500">Your preview will open automatically. Please keep this page open.</p>
+      <p className="mt-2 text-xs text-gray-400">Your source remains a draft until you publish.</p>
+    </div>
+  </section>;
   return <div className="source-editor-page">
     <Button variant="ghost" size="sm" disabled={busy} leftIcon={<ArrowLeft className="size-4" />} onClick={onClose}>Back</Button>
     <div className="page-heading mt-4"><div><h1>{source ? "Edit Knowledge Source" : "Add Knowledge Source"}</h1><p className="muted">Add course knowledge, save your draft, then test the Coach before publishing.</p></div></div>
