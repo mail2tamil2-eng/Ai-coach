@@ -1,6 +1,6 @@
 export type Role = 'Admin' | 'Learner';
 export type Source = { id: string; courseId: string; type: 'Manual' | 'Document'; content: string; fileName?: string; state: 'Completed' | 'Failed'; error?: string; published?: string; inactive: boolean; dirty: boolean; created: string; modified: string; author: string };
-export type Message = { question: string; answer: string; mode: 'Text' | 'Voice'; status: 'Success' | 'Blocked' | 'Failed'; time: string };
+export type Message = { question: string; answer: string; mode: 'Text' | 'Voice'; status: 'Success' | 'Blocked' | 'Failed'; error?: string; time: string };
 export type Session = { id: string; learner: string; email: string; learnerId: string; courseId: string; date: string; status: 'Active' | 'Completed' | 'Disconnected'; messages: Message[] };
 export const courses = [
   { id: 'c1', title: 'Communication Skills', category: 'Soft Skills', progress: 68 },
@@ -43,5 +43,11 @@ export function answerFrom(content: string, question: string, assessment = false
   const matches = content.split(/\n\s*\n/).map(text => ({ text, score: words.filter(w => text.toLowerCase().includes(w)).length })).sort((a,b) => b.score-a.score);
   return { answer: matches[0]?.score ? matches[0].text : "I couldn't find that information in this course's provided knowledge.", status: 'Success' };
 }
-export const initialSessions: Session[] = ['Kavya Nair', 'Rahul Menon', 'Sanjay Iyer', 'Learner A', 'Learner B'].map((learner, i) => ({ id: `S-2410${i}`, learner, email: `${learner.toLowerCase().replaceAll(' ', '.')}@axlekorp.com`, learnerId: `AK-10${42+i}`, courseId: ['c1','c4','c4','c1','c2'][i], date: `2026-10-${23-i}T10:30:00`, status: 'Completed', messages: [{ question: i === 4 ? 'What is the correct answer to the assessment?' : 'Give me an example', answer: i === 4 ? "I can help explain the concept, but I can't provide the answer to an active assessment." : 'Which topic from this course would you like to explore?', mode: i === 1 ? 'Voice' : 'Text', status: i === 4 ? 'Blocked' : 'Success', time: `2026-10-${23-i}T10:30:00` }] }));
+export const initialSessions: Session[] = ['Kavya Nair', 'Rahul Menon', 'Sanjay Iyer', 'Learner A', 'Learner B'].map((learner, i) => ({ id: `S-2410${i}`, learner, email: `${learner.toLowerCase().replaceAll(' ', '.')}@axlekorp.com`, learnerId: `AK-10${42+i}`, courseId: ['c1','c4','c4','c1','c2'][i], date: `2026-10-${23-i}T10:30:00`, status: i === 0 ? 'Disconnected' : 'Completed', messages: [{ question: i === 4 ? 'What is the correct answer to the assessment?' : 'Give me an example', answer: i === 4 ? "I can help explain the concept, but I can't provide the answer to an active assessment." : 'Which topic from this course would you like to explore?', mode: i === 1 ? 'Voice' : 'Text', status: i === 0 ? 'Failed' : i === 4 ? 'Blocked' : 'Success', error: i === 0 ? 'Connection failure. The response could not be completed because the chat was disconnected.' : undefined, time: `2026-10-${23-i}T10:30:00` }] }));
+// Sample failures for reviewing Conversation Details in the prototype.
+initialSessions[0].messages.push(
+  { question: 'Please explain every course topic with practical examples and detailed exercises. '.repeat(14).trim(), answer: '', mode: 'Text', status: 'Failed', error: 'Your question exceeds the maximum allowed character limit.', time: '2026-10-23T10:31:00' },
+  { question: 'How can I communicate more effectively with my team?', answer: '', mode: 'Text', status: 'Failed', error: 'AI Coach is temporarily unavailable due to the AI service limit. Please contact your administrator.', time: '2026-10-23T10:32:00' },
+  { question: 'Give me an example of active listening.', answer: '', mode: 'Voice', status: 'Failed', error: 'Unable to generate a response. Please try again.', time: '2026-10-23T10:33:00' },
+);
 export const dateLabel = (date: string) => new Intl.DateTimeFormat('en-GB', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(date));

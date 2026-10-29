@@ -22,7 +22,7 @@ import { categories, courses, courseOf, dateLabel, initialSources, initialSessio
 const STORE='axle-ai-coach-v1';
 type Stored = {sources:Source[];name:string;sessions:Session[]};
 function readStore(): Stored {
-  try {const data=JSON.parse(localStorage.getItem(STORE)??'null');if(data && Array.isArray(data.sources)&&typeof data.name==='string'&&Array.isArray(data.sessions))return {...data,sessions:data.sessions.map((s:Session)=>s.status==='Active'?{...s,status:'Disconnected'}:s)};}catch{ /* Start clean if storage is unavailable or invalid. */ }
+  try {const data=JSON.parse(localStorage.getItem(STORE)??'null');if(data && Array.isArray(data.sources)&&typeof data.name==='string'&&Array.isArray(data.sessions))return {...data,sessions:data.sessions.map((s:Session)=>s.id==='S-24100' ? initialSessions[0] : s.status==='Active'?{...s,status:'Disconnected'}:s)};}catch{ /* Start clean if storage is unavailable or invalid. */ }
   return {sources:initialSources,name:'AI Coach',sessions:initialSessions};
 }
 export function SourceBadge({source}:{source:Source}) {const status=sourceStatus(source);return <StatusBadge dot status={status==='Published'?'published':status==='Draft'?'draft':status==='Failed'?'error':'neutral'}>{status}</StatusBadge>;}
