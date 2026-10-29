@@ -2,7 +2,7 @@
 .coach-main{min-width:0}
 .source-editor-page{max-width:1000px;margin:0 auto}
 .source-editor-actions{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 28px;border-top:1px solid #e5e7eb;background:#fafbfc}
-.source-preview-grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:24px;align-items:start}
+.source-preview-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:24px;align-items:start}
 .source-preview-chat .chat{height:600px;max-height:75vh;min-height:380px}
 @media(max-width:1000px){.source-preview-grid{grid-template-columns:1fr}}
 @media(max-width:700px){.source-editor-actions{align-items:stretch;flex-direction:column;padding:20px}.source-editor-actions>div{justify-content:flex-end}}
